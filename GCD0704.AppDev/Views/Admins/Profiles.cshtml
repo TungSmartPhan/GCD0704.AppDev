@@ -1,4 +1,4 @@
-﻿@model IEnumerable<GCD0704.AppDev.Models.ApplicationUser>
+﻿@model IEnumerable<GCD0704.AppDev.ViewModels.UserWithRoleViewModel>
 @{
 	ViewBag.Title = "Profiles";
 }
@@ -8,7 +8,6 @@
 <table class="table">
 	<thead>
 		<tr>
-			<th scope="col">User ID</th>
 			<th scope="col">User Name</th>
 			<th scope="col">User Roles</th>
 		</tr>
@@ -17,9 +16,8 @@
 		@foreach (var user in Model)
 		{
 			<tr>
-				<th scope="row">@user.Id</th>
 				<td>@user.UserName</td>
-				<td>@user.Roles</td>
+				<td>@user.RoleName</td>
 
 			</tr>
 		}
