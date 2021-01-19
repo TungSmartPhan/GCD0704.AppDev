@@ -8,7 +8,7 @@ using System.Web.Mvc;
 
 namespace GCD0704.AppDev.Controllers
 {
-	[Authorize]
+	[Authorize(Roles = "user")]
 	public class TodosController : Controller
 	{
 		private ApplicationDbContext _context;
