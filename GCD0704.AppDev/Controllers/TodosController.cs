@@ -1,5 +1,6 @@
 ﻿using GCD0704.AppDev.Models;
 using GCD0704.AppDev.ViewModels;
+using Microsoft.AspNet.Identity;
 using System;
 using System.Data.Entity;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Web.Mvc;
 
 namespace GCD0704.AppDev.Controllers
 {
+	[Authorize]
 	public class TodosController : Controller
 	{
 		private ApplicationDbContext _context;
@@ -18,35 +20,64 @@ namespace GCD0704.AppDev.Controllers
 
 		public ActionResult Index(string searchString)
 		{
-			var todos = _context.Todos.Include(m => m.Category).ToList();
+			var currentUserId = User.Identity.GetUserId();
+
+
+			var todos = _context.TodoUsers
+				.Where(t => t.UserId == currentUserId)
+				.Select(t => t.Todo)
+				.Include(t => t.Category)
+				.ToList();
 
 			if (!String.IsNullOrWhiteSpace(searchString))
 			{
-				todos = _context.Todos
-					.Include(m => m.Category)
-					.Where(t => t.Name.Contains(searchString))
-					.ToList();
+				todos = _context.TodoUsers
+				.Where(t => t.UserId == currentUserId)
+				.Select(t => t.Todo)
+				.Include(t => t.Category)
+				.Where(t => t.Name.Contains(searchString))
+				.ToList();
 			}
 			return View(todos);
 		}
 
 		public ActionResult Details(int id)
 		{
-			var todo = _context.Todos
-				.Include(m => m.Category)
-				.SingleOrDefault(t => t.Id == id);
+			var currentUserId = User.Identity.GetUserId();
+
+
+			var todo = (Todo)_context.TodoUsers
+				.Where(t => t.TodoId == id && t.UserId == currentUserId)
+				.Select(t => t.Todo)
+				.Include(t => t.Category)
+				.Cast<Todo>();
+
+
+			if (todo == null) return HttpNotFound();
+
 			return View(todo);
 		}
 
 		public ActionResult Delete(int id)
 		{
-			var todoInDb = _context.Todos.SingleOrDefault(t => t.Id == id);
+			var currentUserId = User.Identity.GetUserId();
+
+
+
+			var todoInDb = _context.TodoUsers.SingleOrDefault(t => t.TodoId == id && t.UserId == currentUserId);
+
+			if (todoInDb == null) return HttpNotFound();
+
 			if (todoInDb == null)
 			{
 				return HttpNotFound();
 			}
 
-			_context.Todos.Remove(todoInDb);
+			_context.TodoUsers.Remove(todoInDb);
+
+			var todo = _context.Todos.SingleOrDefault(t => t.Id == id);
+
+			_context.Todos.Remove(todo);
 			_context.SaveChanges();
 
 			return RedirectToAction("Index");
@@ -62,7 +93,6 @@ namespace GCD0704.AppDev.Controllers
 			return View(viewModel);
 
 		}
-
 		[HttpPost]
 		public ActionResult Create(Todo todo)
 		{
