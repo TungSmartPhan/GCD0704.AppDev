@@ -45,13 +45,11 @@ namespace GCD0704.AppDev.Controllers
 		{
 			var currentUserId = User.Identity.GetUserId();
 
-
-			var todo = (Todo)_context.TodoUsers
+			var todo = _context.TodoUsers
 				.Where(t => t.TodoId == id && t.UserId == currentUserId)
 				.Select(t => t.Todo)
 				.Include(t => t.Category)
-				.Cast<Todo>();
-
+				.FirstOrDefault();
 
 			if (todo == null) return HttpNotFound();
 
@@ -62,11 +60,8 @@ namespace GCD0704.AppDev.Controllers
 		{
 			var currentUserId = User.Identity.GetUserId();
 
-
-
-			var todoInDb = _context.TodoUsers.SingleOrDefault(t => t.TodoId == id && t.UserId == currentUserId);
-
-			if (todoInDb == null) return HttpNotFound();
+			var todoInDb = _context.TodoUsers
+				.SingleOrDefault(t => t.TodoId == id && t.UserId == currentUserId);
 
 			if (todoInDb == null)
 			{
@@ -100,6 +95,7 @@ namespace GCD0704.AppDev.Controllers
 			{
 				return View();
 			}
+
 			var todoCreated = new Todo();
 			todoCreated.Name = todo.Name;
 			todoCreated.Description = todo.Description;
@@ -107,6 +103,17 @@ namespace GCD0704.AppDev.Controllers
 			todoCreated.CategoryId = todo.CategoryId;
 
 			_context.Todos.Add(todoCreated);
+
+			var currentUserId = User.Identity.GetUserId();
+
+			var todoUser = new TodoUser()
+			{
+				TodoId = todoCreated.Id,
+				UserId = currentUserId
+			};
+
+			_context.TodoUsers.Add(todoUser);
+
 			_context.SaveChanges();
 
 			return RedirectToAction("Index");
@@ -115,12 +122,16 @@ namespace GCD0704.AppDev.Controllers
 		[HttpGet]
 		public ActionResult Edit(int id)
 		{
-			var todoInDb = _context.Todos.SingleOrDefault(t => t.Id == id);
-			if (todoInDb == null) return HttpNotFound();
+			var currentUserId = User.Identity.GetUserId();
+
+			var todoUserInDb = _context.TodoUsers
+				.SingleOrDefault(t => t.UserId == currentUserId && t.TodoId == id);
+
+			if (todoUserInDb == null) return HttpNotFound();
 
 			var viewModel = new TodoCategoriesViewModel()
 			{
-				Todo = todoInDb,
+				Todo = _context.Todos.SingleOrDefault(t => t.Id == id),
 				Categories = _context.Categories.ToList()
 			};
 
@@ -139,6 +150,14 @@ namespace GCD0704.AppDev.Controllers
 				};
 				return View(viewModel);
 			}
+
+			var currentUserId = User.Identity.GetUserId();
+
+			var todoUserInDb = _context.TodoUsers
+				.SingleOrDefault(t => t.UserId == currentUserId && t.TodoId == todo.Id);
+
+			if (todoUserInDb == null) return HttpNotFound();
+
 			var todoInDb = _context.Todos.SingleOrDefault(t => t.Id == todo.Id);
 
 			todoInDb.Name = todo.Name;
