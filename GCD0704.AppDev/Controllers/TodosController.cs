@@ -8,7 +8,7 @@ using System.Web.Mvc;
 
 namespace GCD0704.AppDev.Controllers
 {
-	[Authorize(Roles = "user")]
+	[Authorize]
 	public class TodosController : Controller
 	{
 		private ApplicationDbContext _context;
@@ -18,29 +18,40 @@ namespace GCD0704.AppDev.Controllers
 		}
 		// GET: Todos
 
+
 		public ActionResult Index(string searchString)
 		{
-			var currentUserId = User.Identity.GetUserId();
 
-
-			var todos = _context.TodoUsers
-				.Where(t => t.UserId == currentUserId)
-				.Select(t => t.Todo)
-				.Include(t => t.Category)
-				.ToList();
-
-			if (!String.IsNullOrWhiteSpace(searchString))
+			if (User.IsInRole("user"))
 			{
-				todos = _context.TodoUsers
-				.Where(t => t.UserId == currentUserId)
-				.Select(t => t.Todo)
-				.Include(t => t.Category)
-				.Where(t => t.Name.Contains(searchString))
-				.ToList();
+				var currentUserId = User.Identity.GetUserId();
+
+
+				var todos = _context.TodoUsers
+					.Where(t => t.UserId == currentUserId)
+					.Select(t => t.Todo)
+					.Include(t => t.Category)
+					.ToList();
+
+				if (!String.IsNullOrWhiteSpace(searchString))
+				{
+					todos = _context.TodoUsers
+					.Where(t => t.UserId == currentUserId)
+					.Select(t => t.Todo)
+					.Include(t => t.Category)
+					.Where(t => t.Name.Contains(searchString))
+					.ToList();
+				}
+				return View(todos);
 			}
-			return View(todos);
+
+			return View(_context.Todos
+				.Include(t => t.Category)
+				.ToList());
+
 		}
 
+		[Authorize(Roles = "user")]
 		public ActionResult Details(int id)
 		{
 			var currentUserId = User.Identity.GetUserId();
@@ -55,6 +66,7 @@ namespace GCD0704.AppDev.Controllers
 
 			return View(todo);
 		}
+		[Authorize(Roles = "user")]
 
 		public ActionResult Delete(int id)
 		{
@@ -79,6 +91,8 @@ namespace GCD0704.AppDev.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "user")]
+
 		public ActionResult Create()
 		{
 			var viewModel = new TodoCategoriesViewModel()
@@ -89,6 +103,8 @@ namespace GCD0704.AppDev.Controllers
 
 		}
 		[HttpPost]
+		[Authorize(Roles = "user")]
+
 		public ActionResult Create(Todo todo)
 		{
 			if (!ModelState.IsValid)
@@ -120,6 +136,8 @@ namespace GCD0704.AppDev.Controllers
 		}
 
 		[HttpGet]
+		[Authorize(Roles = "user")]
+
 		public ActionResult Edit(int id)
 		{
 			var currentUserId = User.Identity.GetUserId();
@@ -139,6 +157,8 @@ namespace GCD0704.AppDev.Controllers
 		}
 
 		[HttpPost]
+		[Authorize(Roles = "user")]
+
 		public ActionResult Edit(Todo todo)
 		{
 			if (!ModelState.IsValid)
