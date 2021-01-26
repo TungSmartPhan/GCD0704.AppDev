@@ -14,7 +14,8 @@
 	</div>
 }
 
-@if (User.IsInRole("user")) {
+@if (User.IsInRole("user"))
+{
 	@Html.ActionLink("Create new Task", "Create", "Todos", null, new { @class = "btn btn-primary" })
 }
 
@@ -28,10 +29,8 @@
 			<th scope="col">Category</th>
 			@if (User.IsInRole("user"))
 			{
-			<th scope="col">Action</th>
-
+				<th scope="col">Action</th>
 			}
-
 		</tr>
 	</thead>
 	<tbody>
@@ -45,19 +44,18 @@
 				<td>@item.Category.Name</td>
 				@if (User.IsInRole("user"))
 				{
-				<td>
-					@Html.ActionLink("Edit the Task", "Edit", "Todos",
-								 new { id = item.Id },
-								 new { @class = "btn btn-default" })
-					@Html.ActionLink("Delete this task", "Delete", "Todos",
-								 new { id = item.Id },
-								 new { @class = "btn btn-danger" })
-					@Html.ActionLink("Details", "Details", "Todos",
-								 new { id = item.Id },
-								 new { @class = "btn btn-primary" })
-				</td>
+					<td>
+						@Html.ActionLink("Edit the Task", "Edit", "Todos",
+									 new { id = item.Id },
+									 new { @class = "btn btn-default" })
+						@Html.ActionLink("Delete this task", "Delete", "Todos",
+									 new { id = item.Id },
+									 new { @class = "btn btn-danger" })
+						@Html.ActionLink("Details", "Details", "Todos",
+									 new { id = item.Id },
+									 new { @class = "btn btn-primary" })
+					</td>
 				}
-	
 			</tr>
 		}
 	</tbody>
